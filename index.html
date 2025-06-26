@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>バーコードリーダー</title>
+  <title>バーコード専用リーダー</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -16,16 +16,16 @@
     #container {
       position: relative;
       width: 100%;
-      max-width: 100%;
+      overflow: hidden;
     }
 
     #video {
-      width: 100vw;
+      width: 150vw; /* デジタルズーム1.5倍 */
       height: auto;
       object-fit: cover;
+      transform: translateX(-25vw); /* 中央揃え */
     }
 
-    /* ターゲットライン（中央の赤線） */
     #target-line {
       position: absolute;
       top: 50%;
@@ -54,39 +54,9 @@
     <div id="target-line"></div>
   </div>
   <div id="result">バーコードの結果がここに表示されます</div>
-  <div id="tap-hint">※ タップでフォーカス再調整（可能な機種のみ）</div>
+  <div id="tap-hint">※ タップでフォーカス再調整（機種による）</div>
 
   <script type="module">
-    import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
-
-    const video = document.getElementById('video');
-    const resultElement = document.getElementById('result');
-
-    const codeReader = new BrowserMultiFormatReader();
-
-    codeReader.decodeFromVideoDevice(null, video, (result, err, controls) => {
-      if (result) {
-        resultElement.textContent = `読み取り結果: ${result.getText()}`;
-        controls.stop();
-      }
-    });
-
-    // タップでフォーカス再調整（対応端末のみ）
-    video.addEventListener('click', async () => {
-      try {
-        const stream = video.srcObject;
-        const [track] = stream.getVideoTracks();
-        const capabilities = track.getCapabilities?.();
-        if (capabilities?.focusMode) {
-          await track.applyConstraints({
-            advanced: [{ focusMode: 'continuous' }]
-          });
-          resultElement.textContent = 'フォーカス再調整を試行中...';
-        }
-      } catch (e) {
-        console.log('フォーカス調整できません:', e);
-      }
-    });
-  </script>
-</body>
-</html>
+    import {
+      BrowserMultiFormatReader,
+      BarcodeForma
