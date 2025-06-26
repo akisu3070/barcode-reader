@@ -59,4 +59,48 @@
   <script type="module">
     import {
       BrowserMultiFormatReader,
-      BarcodeForma
+      BarcodeFormat,
+      DecodeHintType
+    } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
+
+    const video = document.getElementById('video');
+    const resultElement = document.getElementById('result');
+
+    // バーコード（1次元コード）形式のみを指定
+    const hints = new Map();
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39
+    ]);
+
+    const codeReader = new BrowserMultiFormatReader(hints);
+
+    codeReader.decodeFromVideoDevice('environment', video, (result, err, controls) => {
+      if (result) {
+        resultElement.textContent = `読み取り結果: ${result.getText()}`;
+        controls.stop(); // 一度読み取ったら止める
+      }
+    });
+
+    // タップでフォーカス再調整（対応機種のみ）
+    video.addEventListener('click', async () => {
+      try {
+        const stream = video.srcObject;
+        const [track] = stream.getVideoTracks();
+        const capabilities = track.getCapabilities?.();
+        if (capabilities?.focusMode) {
+          await track.applyConstraints({
+            advanced: [{ focusMode: 'continuous' }]
+          });
+          resultElement.textContent = 'フォーカス再調整を試行中...';
+        }
+      } catch (e) {
+        console.log('フォーカス調整できません:', e);
+      }
+    });
+  </script>
+</body>
+</html>
