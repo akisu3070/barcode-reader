@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>バーコードリーダー</title>
+  <style>
+    #video {
+      width: 100%;
+      max-width: 480px;
+      border: 1px solid #ccc;
+    }
+    #result {
+      margin-top: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>バーコード読み取り</h2>
+  <video id="video" autoplay></video>
+  <div id="result">バーコードの結果がここに表示されます</div>
+
+  <!-- ZXingライブラリ読み込み -->
+  <script type="module">
+    import { BrowserMultiFormatReader } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
+
+    const videoElement = document.getElementById('video');
+    const resultElement = document.getElementById('result');
+
+    const codeReader = new BrowserMultiFormatReader();
+
+    codeReader
+      .decodeFromVideoDevice(null, videoElement, (result, error, controls) => {
+        if (result) {
+          resultElement.textContent = `読み取り結果: ${result.getText()}`;
+          controls.stop(); // 1回読み取ったら停止
+        }
+        if (error) {
+          // 読み取りエラーは無視（読み取り中は頻発します）
+        }
+      })
+      .catch(err => {
+        resultElement.textContent = `エラー: ${err}`;
+      });
+  </script>
+</body>
+</html>
